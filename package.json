@@ -1,0 +1,31 @@
+{
+  "name": "webpage2pdf",
+  "version": "1.0.0",
+  "description": "WebサイトのURLを入力するだけで、簡単にPDFファイルに変換できるWebアプリケーション",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pdf",
+    "web-to-pdf",
+    "puppeteer",
+    "node.js",
+    "express",
+    "web-scraping",
+    "pdf-generator",
+    "batch-processing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "cors": "^2.8.5",
+    "csv-parse": "^6.0.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "puppeteer": "^24.12.1"
+  }
+}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, in                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                PDFに変換したいWebページのURLを直接入力、またはCSVファイルをアップロード
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                複数のURLを処理する場合は、カンマ（,）で区切って入力
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                CSVファイルにはURLを含む任意の形式で記述可能（自動検出）
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                「PDF生成」ボタンをクリック
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                生成が完了したら、各PDFファイルを個別にダウンロード、または「全てダウンロード (ZIP)」で一括取得
+                            </li>
+                        </ul>
+    <title>WebPage2PDF - Webページを簡単にPDF変換</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <!-- ヘッダー -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 text-primary mb-3">
+                    <i class="fas fa-file-pdf"></i> WebPage2PDF
+                </h1>
+                <p class="lead text-muted">
+                    WebページのURLを入力するだけで、簡単にPDFファイルに変換できます
+                </p>
+            </div>
+        </div>
+
+        <!-- メインフォーム -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <form id="pdfForm">
+                            <div class="mb-4">
+                                <label for="urls" class="form-label fs-5 fw-bold">
+                                    <i class="fas fa-link text-primary"></i> URLを入力
+                                </label>
+                                <textarea 
+                                    class="form-control form-control-lg" 
+                                    id="urls" 
+                                    name="urls" 
+                                    rows="4" 
+                                    placeholder="複数のURLを入力する場合は、カンマ（,）で区切ってください&#10;例：https://example.com, https://google.com, https://github.com"
+                                    required
+                                ></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> 最大50個のURLまで同時に処理できます
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-3">
+                                <span class="text-muted">または</span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="csvFile" class="form-label fs-5 fw-bold">
+                                    <i class="fas fa-file-csv text-success"></i> CSVファイルをアップロード
+                                </label>
+                                <input 
+                                    type="file" 
+                                    class="form-control form-control-lg" 
+                                    id="csvFile" 
+                                    name="csvFile" 
+                                    accept=".csv"
+                                >
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> CSVファイルからURLを自動抽出します（最大50個、5MBまで）
+                                </div>
+                                <button type="button" class="btn btn-outline-success mt-2" id="uploadCsvBtn" style="display: none;">
+                                    <i class="fas fa-upload"></i> CSVをアップロード
+                                </button>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                                    <i class="fas fa-magic"></i> PDF生成
+                                </button>
+                                
+                                <div class="text-center my-2">
+                                    <span class="text-muted">または</span>
+                                </div>
+                                
+                                <button type="button" class="btn btn-warning btn-lg" id="manualLoginBtn">
+                                    <i class="fas fa-user-check"></i> 手動ログインでPDF生成
+                                </button>
+                                <div class="form-text text-center">
+                                    <i class="fas fa-lightbulb"></i> ログインが必要なサイト用：ブラウザでログイン後にPDF生成
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 手動ログイン状態表示 -->
+        <div class="row justify-content-center mt-4" id="loginSection" style="display: none;">
+            <div class="col-lg-8">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-clock"></i> 手動ログイン待機中
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="text-primary">📋 手順</h6>
+                                <ol class="mb-3">
+                                    <li>開いたブラウザでMercariにログイン</li>
+                                    <li>ログイン完了を確認</li>
+                                    <li>下の「PDF生成開始」ボタンをクリック</li>
+                                </ol>
+                                
+                                <div class="alert alert-info mb-3">
+                                    <strong id="loginUrlInfo"></strong><br>
+                                    <small class="text-muted" id="urlCountInfo"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <button type="button" class="btn btn-success btn-lg mb-3" id="startPdfBtn" disabled>
+                                    <i class="fas fa-play-circle"></i> PDF生成開始
+                                </button>
+                                <br>
+                                <button type="button" class="btn btn-secondary btn-sm" id="cancelLoginBtn">
+                                    <i class="fas fa-times"></i> キャンセル
+                                </button>
+                                
+                                <div class="mt-3">
+                                    <div class="spinner-border text-warning" role="status" id="loginSpinner">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">ログイン完了まで待機中...</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ローディング表示 -->
+        <div class="row justify-content-center mt-4" id="loadingSection" style="display: none;">
+            <div class="col-lg-8">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <div class="spinner-border text-warning mb-3" role="status">
+                            <span class="visually-hidden">処理中...</span>
+                        </div>
+                        <h5 class="text-warning">PDF生成中です...</h5>
+                        <p class="text-muted">しばらくお待ちください</p>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果表示 -->
+        <div class="row justify-content-center mt-4" id="resultsSection" style="display: none;">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check-circle"></i> 生成結果
+                        </h5>
+                        <button type="button" class="btn btn-light btn-sm" id="downloadAllBtn" style="display: none;">
+                            <i class="fas fa-download"></i> 全てダウンロード (ZIP)
+                        </button>
+                    </div>
+                    <div class="card-body" id="results">
+                        <!-- 動的に結果が表示される -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使い方説明 -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-8">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-question-circle text-info"></i> 使い方
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                PDFに変換したいWebページのURLを直接入力、またはCSVファイルをアップロード
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                複数のURLを処理する場合は、カンマ（,）で区切って入力
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                CSVファイルにはURLを含む任意の形式で記述可能（自動検出）
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                「PDF生成」ボタンをクリック
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success"></i> 
+                                生成が完了したら、各PDFファイルを個別にダウンロード、または一括でZIPダウンロード
+                            </li>
+                        </ul>
+                        
+                        <div class="alert alert-info mt-3" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-lightbulb"></i> 既存ブラウザセッションの利用
+                            </h6>
+                            <p class="mb-2">
+                                認証が必要なページ（メルカリなど）を処理する場合は、既にログインしているChromeブラウザを使用できます：
+                            </p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong class="text-primary">👍 推奨: 現在のブラウザを利用</strong>
+                                    <ol class="small">
+                                        <li class="text-success">既にChromeでMercariにログイン済み</li>
+                                        <li>PowerShellで実行：<br>
+                                            <code class="text-primary">powershell -File connect-current-chrome.ps1</code>
+                                        </li>
+                                        <li class="text-info">📋 同じウィンドウの新しいタブでPDF生成</li>
+                                        <li class="text-success">🔓 既存のログイン状態を保持</li>
+                                    </ol>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>方法2: 新しくデバッグモードで起動</strong>
+                                    <ol class="small">
+                                        <li>PowerShellで実行：<br>
+                                            <code class="text-primary">powershell -File start-chrome-debug.ps1</code>
+                                        </li>
+                                        <li>開いたChromeでMercariにログイン</li>
+                                        <li>PDF生成を実行</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    両方の方法で、ログイン状態を維持したままPDF化できます
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">© 2025 WebPage2PDF - Simple & Fast PDF Conversion Service</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
