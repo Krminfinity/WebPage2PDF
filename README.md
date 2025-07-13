@@ -305,3 +305,101 @@ ISC
 ## 作者
 
 WebPage2PDF - Simple & Fast PDF Conversion Service
+
+## 🚀 デプロイオプション
+
+このWebPage2PDFアプリケーションは、複数のプラットフォームにデプロイできます：
+
+### Vercel (推奨)
+
+1. **GitHubリポジトリをVercelに接続**
+   ```bash
+   # Vercel CLIをインストール
+   npm i -g vercel
+   
+   # デプロイ
+   vercel
+   ```
+
+2. **環境変数の設定**
+   - Vercelダッシュボードで以下を設定：
+     - `NODE_ENV=production`
+     - `PORT=3000` (自動設定)
+
+3. **自動デプロイ**
+   - mainブランチへのpushで自動デプロイ
+   - プレビュー環境も自動生成
+
+### Railway
+
+1. **GitHubリポジトリを接続**
+   - [Railway](https://railway.app)でNew Project
+   - Deploy from GitHub repo を選択
+
+2. **自動設定**
+   - `Procfile`により自動でNode.jsアプリとして認識
+   - 環境変数は自動設定
+
+### Render
+
+1. **Web Serviceとして作成**
+   - [Render](https://render.com)でNew Web Service
+   - GitHubリポジトリを接続
+
+2. **ビルド設定**
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+
+### Netlify (サーバーレス関数として)
+
+1. **Netlify Functionsとして実行**
+   ```bash
+   # Netlify CLIでデプロイ
+   npm install -g netlify-cli
+   netlify deploy
+   ```
+
+### GitHub Codespaces (開発環境)
+
+1. **リポジトリでCodespaceを作成**
+2. **自動で環境構築**
+3. **ポート3000で実行**
+
+## 🌐 ライブデモ
+
+デプロイ後のアクセス例：
+- **Vercel**: `https://webpage2pdf.vercel.app`
+- **Railway**: `https://webpage2pdf-production.up.railway.app`
+- **Render**: `https://webpage2pdf.onrender.com`
+
+## 📊 機能制限とクラウド対応
+
+### クラウド環境での制限
+- **実行時間制限**: 関数の最大実行時間（Vercel: 10秒〜5分）
+- **メモリ制限**: 利用可能メモリ（通常512MB〜1GB）
+- **同時実行数**: 同時処理可能なリクエスト数
+
+### 対応策
+- **バッチ処理の分割**: 大量URLの場合は分割処理
+- **タイムアウト処理**: 長時間処理のタイムアウト設定
+- **エラーハンドリング**: クラウド環境特有のエラー対応
+
+## 🔧 プロダクション設定
+
+### 環境変数
+```bash
+NODE_ENV=production
+PORT=3000
+MAX_URLS=50
+TIMEOUT_MS=300000
+```
+
+### セキュリティ
+- **Rate Limiting**: リクエスト数制限
+- **CORS設定**: 許可ドメインの設定
+- **ファイルサイズ制限**: アップロードサイズ制限
+
+### パフォーマンス最適化
+- **CDN**: 静的ファイルの配信最適化
+- **圧縮**: gzip圧縮の有効化
+- **キャッシュ**: 適切なキャッシュヘッダー設定
