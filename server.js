@@ -9,46 +9,6 @@ const { parse } = require('csv-parse');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const isProduction = process.env.NODE_ENV === 'production';
-const isVercel = process.env.VERCEL === '1';
-
-// Vercel環境での設定
-const getPuppeteerConfig = () => {
-    if (isVercel) {
-        return {
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--disable-gpu'
-            ],
-            headless: 'new'
-        };
-    }
-    
-    if (isProduction) {
-        return {
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox'
-            ],
-            headless: 'new'
-        };
-    }
-    
-    return {
-        headless: false,
-        devtools: false,
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--start-maximized'
-        ]
-    };
-};
 
 // ミドルウェア設定
 app.use(cors());
@@ -339,17 +299,19 @@ app.post('/generate-pdf', async (req, res) => {
             console.log('');
             console.log('⚠️ 現在は新しいブラウザウィンドウで処理を続行します...');
             
-            // フォールバック: 環境に応じたブラウザ起動
-            const puppeteerConfig = getPuppeteerConfig();
-            browser = await puppeteer.launch(puppeteerConfig);
-            
-            if (isVercel) {
-                console.log('🚀 Vercel環境でヘッドレスブラウザを起動しました');
-            } else if (isProduction) {
-                console.log('🔧 本番環境でヘッドレスブラウザを起動しました');
-            } else {
-                console.log('⚠️ 新しい可視ブラウザウィンドウを起動しました（ログイン情報なし）');
-            }
+            // フォールバック: 新しい可視ブラウザを起動（ヘッドレスモード無効）
+            browser = await puppeteer.launch({
+                headless: false, // ブラウザウィンドウを表示
+                devtools: false, // 開発者ツールは無効にして見た目をスッキリ
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor',
+                    '--start-maximized' // ウィンドウを最大化
+                ]
+            });
+            console.log('⚠️ 新しい可視ブラウザウィンドウを起動しました（ログイン情報なし）');
         }
 
         const results = [];
@@ -678,17 +640,17 @@ app.post('/prepare-login', async (req, res) => {
         }
         
         if (!browser) {
-            // 環境に応じたブラウザを起動
-            const puppeteerConfig = getPuppeteerConfig();
-            browser = await puppeteer.launch(puppeteerConfig);
-            
-            if (isVercel) {
-                console.log('🚀 Vercel環境でヘッドレスブラウザを起動しました（手動ログイン用）');
-            } else if (isProduction) {
-                console.log('🔧 本番環境でヘッドレスブラウザを起動しました（手動ログイン用）');
-            } else {
-                console.log('新しい可視ブラウザを起動しました（手動ログイン用）');
-            }
+            // 新しい可視ブラウザを起動
+            browser = await puppeteer.launch({
+                headless: false,
+                devtools: false,
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--start-maximized'
+                ]
+            });
+            console.log('新しい可視ブラウザを起動しました（手動ログイン用）');
         }
 
         // 最初のURLでログインページを開く
